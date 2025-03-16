@@ -2,6 +2,7 @@ const Cliente = function(nombre, edad, sueldo){
     this.nombre = nombre
     this.edad = edad
     this.sueldo = sueldo
+    this.prestamos = []
 }
 const listaClientes = []
 
@@ -13,6 +14,7 @@ const Prestamo = function(monto, cuotas, interes, montoTotal, montoCuota){
     this.montoCuota = montoCuota
 }
 const listaPrestamos = []
+const historialPrestamos = []
 
 function agregarClientes(){
     let nombre = prompt("Ingrese su nombre").trim().toUpperCase()
@@ -27,7 +29,12 @@ function agregarClientes(){
     let cliente = new Cliente(nombre, edad, sueldo)
     listaClientes.push(cliente)
     console.log("Cliente agregado exitosamente!")
-    console.table(listaClientes)
+    console.table(listaClientes.map(cliente => ({
+        nombre: cliente.nombre,
+        edad: cliente.edad,
+        sueldo: cliente.sueldo,
+        prestamos: cliente.prestamos.length
+    })))
 }
 
 function buscarClientes(){
@@ -35,7 +42,12 @@ function buscarClientes(){
     let clienteBuscado = listaClientes.filter((x)=> x.nombre.toUpperCase().includes(palabraClave))
 
     if(clienteBuscado.length >0){
-        console.table(clienteBuscado)
+        console.table(clienteBuscado.map(c => ({
+            nombre: c.nombre,
+            edad: c.edad,
+            sueldo: c.sueldo,
+            cantidadPrestamos: c.prestamos.length
+        })))
     }else{
         alert("No se encontraron coincidencias en la base!")
     }
@@ -70,12 +82,24 @@ function solicitarPrestamo(){
 
     let prestamo = new Prestamo(monto, cuotas, interes, montoTotal, montoCuota)
     listaPrestamos.push(prestamo)
+    cliente.prestamos.push(prestamo)
+
+    let clienteHistorial = historialPrestamos.find(h => h.nombre.toLowerCase() === nombre.toLocaleLowerCase())
+
+    if (clienteHistorial){
+        clienteHistorial.cantidad += 1
+    } else{
+        historialPrestamos.push({nombre: nombre.toUpperCase(), cantidad: 1})
+    }
+
     console.log("Préstamo aprobado!")
     console.table(listaPrestamos)
+    console.table(historialPrestamos)
+
     alert(`Resumen del préstamo:
         Monto del préstamo: $${monto}
-        Tasa de interés anual: ${interes}%
         Cantidad de cuotas: ${cuotas}
+        Tasa de interés anual: ${interes}%
         Monto total a pagar: $${montoTotal}
         Monto por cuota: $${montoCuota}`)
 }
