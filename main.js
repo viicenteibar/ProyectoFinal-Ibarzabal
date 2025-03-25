@@ -28,30 +28,42 @@ function agregarClientes(){
 
     let cliente = new Cliente(nombre, edad, sueldo)
     listaClientes.push(cliente)
-    console.log("Cliente agregado exitosamente!")
-    console.table(listaClientes.map(cliente => ({
-        nombre: cliente.nombre,
-        edad: cliente.edad,
-        sueldo: cliente.sueldo,
-        prestamos: cliente.prestamos.length
-    })))
+    alert("Cliente agregado exitosamente!")
+
+    // Construimos la tabla en formato de texto para el alert
+    let mensaje = "Lista de Clientes:\n\n"
+    listaClientes.forEach(cliente => {
+        mensaje += `Nombre: ${cliente.nombre}\n`
+        mensaje += `Edad: ${cliente.edad}\n`
+        mensaje += `Sueldo: $${cliente.sueldo}\n`
+        mensaje += `Préstamos: ${cliente.prestamos.length}\n`
+        mensaje += "-------------------\n"
+    });
+
+    alert(mensaje)
 }
+
 
 function buscarClientes(){
     let palabraClave = prompt("Ingresa el nombre del cliente a buscar").trim().toUpperCase()
     let clienteBuscado = listaClientes.filter((x)=> x.nombre.toUpperCase().includes(palabraClave))
 
-    if(clienteBuscado.length >0){
-        console.table(clienteBuscado.map(c => ({
-            nombre: c.nombre,
-            edad: c.edad,
-            sueldo: c.sueldo,
-            cantidadPrestamos: c.prestamos.length
-        })))
-    }else{
+    if(clienteBuscado.length > 0){
+        let mensaje = "Clientes encontrados:\n\n"
+        clienteBuscado.forEach(c => {
+            mensaje += `Nombre: ${c.nombre}\n`
+            mensaje += `Edad: ${c.edad}\n`
+            mensaje += `Sueldo: $${c.sueldo}\n`
+            mensaje += `Cantidad de préstamos: ${c.prestamos.length}\n`
+            mensaje += "-------------------\n"
+        });
+
+        alert(mensaje)
+    } else {
         alert("No se encontraron coincidencias en la base!")
     }
 }
+
 
 function solicitarPrestamo(){
     let nombre = prompt("Ingrese su nombre").trim()
@@ -103,3 +115,36 @@ function solicitarPrestamo(){
         Monto total a pagar: $${montoTotal}
         Monto por cuota: $${montoCuota}`)
 }
+
+function iniciarSimulacion(){
+    let opcion;
+    do {
+        opcion = prompt(
+            "Bienvenido al sistema de clientes. Seleccione una opción:\n" +
+            "1. Agregar cliente\n" +
+            "2. Buscar cliente\n" +
+            "3. Solicitar préstamo\n" +
+            "4. Salir"
+        );
+
+        switch (opcion) {
+            case "1":
+                agregarClientes()
+                break
+            case "2":
+                buscarClientes()
+                break
+            case "3":
+                solicitarPrestamo()
+                break
+            case "4":
+                alert("Gracias por utilizar nuestro sistema!")
+                break
+            default:
+                alert("Opción inválida. Intente nuevamente.")
+                break
+        }
+    } while (opcion !== "4");
+}
+
+iniciarSimulacion();
