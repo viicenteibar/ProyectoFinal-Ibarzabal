@@ -29,15 +29,26 @@ main{
     display: block;
     margin-bottom: 0.5rem;
 }
-.form-container input, .form-container button, .result-container button{
-    width: 100%;
+.form-container input{
+    width: 95%;
     padding: 0.75rem;
     margin-bottom: 1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+.form-container button, .result-container button{
+    width: 25%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: block;
+    margin: 0 auto;
+    transition: 0.3s;
+}
 .form-container button:hover, .result-container button:hover{
     background-color: #0056b3;
+    transform: scale(1.04);
 }
 .result-container{
     display: none;
