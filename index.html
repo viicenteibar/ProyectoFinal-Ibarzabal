@@ -3,13 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <title>Sistemas de Préstamos</title>
 </head>
 <body>
+    <header>
+        <h1>Sistema de Préstamos</h1>
+    </header>
+    <main>
+        <!-- agregar cliente -->
+        <div class="form-container" id="form-agregar-cliente">
+            <h2>Agregar Cliente</h2>
+            <label for="nombre-cliente">Nombre:</label>
+            <input type="text" id="nombre-cliente" placeholder="Ingrese su nombre">
+
+            <label for="dni-cliente">DNI:</label>
+            <input type="number" id="dni-cliente" placeholder="Ingrese su DNI">
+
+            <label for="sueldo-cliente">Sueldo:</label>
+            <input type="number" id="sueldo-cliente" placeholder="Ingrese su sueldo">
+
+            <button id="btn-agregar-cliente">Agregar Cliente</button>
+        </div>
+
+        <!-- buscar cliente -->
+        <div class="form-container" id="form-buscar-cliente">
+            <h2>Buscar Cliente</h2>
+            <label for="buscar-dni">DNI del Cliente:</label>
+            <input type="number" id="buscar-dni" placeholder="Ingrese el DNI del cliente">
+            <button id="btn-buscar-cliente">Buscar Cliente</button>
+
+            <!-- resultados -->
+            <div class="result-container" id="resultados">
+            <h2>Resultados</h2>
+            <div id="resultado-contenido"></div>
+            <button id="btn-cerrar-resultados">Cerrar</button>
+            </div>
+        </div>
+
+        <!-- solicitar préstamo -->
+        <div class="form-container" id="form-solicitar-prestamo">
+            <h2>Solicitar Préstamo</h2>
+            <label for="nombre">DNI:</label>
+            <input type="number" id="dni" placeholder="Ingrese su DNI">
+
+            <label for="monto">Monto del Préstamo:</label>
+            <input type="number" id="monto" placeholder="Ingrese el monto">
+
+            <label for="cuotas">Cantidad de Cuotas:</label>
+            <input type="number" id="cuotas" placeholder="Ingrese la cantidad de cuotas">
+
+            <label for="interes">Interés Anual (%):</label>
+            <input type="number" id="interes" placeholder="Ingrese el interés anual">
+
+            <button id="btn-solicitar-prestamo">Calcular Préstamo</button>
+
+            <div class="result-container" id="resultado-prestamo">
+                <h2>Resumen del Préstamo</h2>
+                <div id="prestamo-contenido"></div>
+                <button id="btn-cerrar-prestamo">Cerrar</button>
+            </div>
+        </div>
+
+        <div></div>
+    </main>
     
 
-
-
+    
     <script src="main.js"></script>
 </body>
 </html>
