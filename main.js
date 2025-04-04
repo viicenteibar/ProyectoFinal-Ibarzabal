@@ -48,20 +48,36 @@ function agregarClientes(){
     const sueldo = parseFloat(document.getElementById('sueldo-cliente').value)
 
     if(!nombre || isNaN(dni) || isNaN(sueldo)){
-        alert("Por favor, complete todos los campos con valores válidos.")
+        Swal.fire({
+            title: 'Error',
+            text: 'Por favor, complete todos los campos correctamente.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+        })
         return
     }
 
     const clienteExistente = listaClientes.find(c=> c.dni === dni)
     if(clienteExistente){
-        alert("Ya existe un cliente con este DNI.")
+        Swal.fire({
+            title: 'Error',
+            text: 'Ya existe un cliente con ese DNI.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+        })
         return
     }
 
     const cliente = new Cliente(nombre, dni, sueldo)
     listaClientes.push(cliente)
     guardarClientesEnElLocalStorage()
-    alert("Cliente agregado exitosamente.")
+
+    Swal.fire({
+        title: 'Éxito',
+        text: 'Cliente agregado exitosamente.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+    })
 }
 
 // funcion para buscar clientes por dni
@@ -69,7 +85,12 @@ function buscarClientes(){
     const dni = parseInt(document.getElementById('buscar-dni').value)
 
     if(isNaN(dni)){
-        alert("Por favor, ingrese un DNI válido.")
+        Swal.fire({
+            title: 'Error',
+            text: 'Por favor, ingrese un DNI válido.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+        })
         return
     }
 
@@ -83,10 +104,21 @@ function buscarClientes(){
         <p><strong>Sueldo:</strong> $${clienteBuscado.sueldo}</p>
         <p><strong>Préstamos:</strong> ${clienteBuscado.prestamos.length}</p>
         `
+        Swal.fire({
+            title: 'Cliente Encontrado',
+            text: 'Los datos se han cargado correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+        })
+        document.getElementById('resultados').style.display = 'block'
     } else {
-        resultadoDiv.innerHTML = `<p>No se encontró un cliente con ese DNI.</p>`
+        Swal.fire({
+            title: 'No Encontrado',
+            text: 'No se encontró un cliente con ese DNI.',
+            icon: 'warning',
+            confirmButtonText: 'Aceptar',
+        })
     }
-    document.getElementById('resultados').style.display = 'block'
 }
 
 // funcion solitiar prestamo segun metodo
@@ -95,7 +127,12 @@ function calcularPrestamoPorMetodo() {
     const cliente = listaClientes.find(c => c.dni === dni);
 
     if (!cliente) {
-        alert("Cliente no encontrado. Por favor, registrese primero.");
+        Swal.fire({
+            title: 'No Encontrado',
+            text: 'Cliente no encontrado. Por favor, registrese primero.',
+            icon: 'warning',
+            confirmButtonText: 'Aceptar',
+        })
         return;
     }
 
@@ -104,8 +141,20 @@ function calcularPrestamoPorMetodo() {
     const metodo = document.getElementById('metodo').value;
 
     if (isNaN(monto) || isNaN(cuotas) || monto <= 0 || cuotas <= 0) {
-        alert("Por favor, complete todos los campos con valores válidos.");
+        Swal.fire({
+            title: 'Error',
+            text: 'Por favor, complete todos los campos con valores válidos.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+        })
         return;
+    } else{
+        Swal.fire({
+            title: 'Éxito',
+            text: 'Préstamo solicitado exitosamente.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+        })
     }
 
     let tablaAmortizacion
@@ -194,7 +243,7 @@ function calcularMetodoAmericano(monto, cuotas){
 function mostrarTablaAmortizacion(tabla){
     const tablaContenido = document.getElementById('prestamo-contenido')
     tablaContenido.innerHTML = `
-        <h3>Tabla de Amortación</h3>
+        <h3>Tabla de Amortización</h3>
         <table>
             <thead>
                 <tr>
@@ -232,55 +281,3 @@ document.getElementById('btn-cerrar-resultados').addEventListener('click', funct
 document.getElementById('btn-cerrar-prestamo').addEventListener('click', function(){
     document.getElementById('resultado-prestamo').style.display = 'none'
 })
-
-
-
-
-
-
-/* // funcion para solicitar un prestamo
-function solicitarPrestamo(){
-    const dni = parseInt(document.getElementById('dni').value)
-    const cliente = listaClientes.find(c => c.dni === dni)
-
-    if (!cliente){
-        alert("Cliente no encontrado. Por favor, registrese primero.")
-        return
-    }
-
-    // confirmacion para verificar si es la persona correcta
-    const confirmacion = confirm(`¿Es usted ${cliente.nombre} con DNI ${cliente.dni}?`)
-    if(!confirmacion){
-        alert("Operación cancelada.")
-        return
-    }
-
-    const monto = parseFloat(document.getElementById('monto').value)
-    const cuotas = parseInt(document.getElementById('cuotas').value)
-    const interes = parseFloat(document.getElementById('interes').value)
-
-    if(isNaN(monto) || isNaN(cuotas) || isNaN(interes) || monto <= 0 || cuotas <= 0 || interes <= 0){
-        alert("Por favor, complete todos los campos con valores válidos.")
-        return
-    }
-
-    const montoTotal = (monto + (monto * (interes / 100))).toFixed(2)
-    const montoCuota = (montoTotal / cuotas).toFixed(2)
-
-    const prestamo = new Prestamo(monto, cuotas, interes, montoTotal, montoCuota)
-    listaPrestamos.push(prestamo)
-    cliente.prestamos.push(prestamo)
-
-    guardarClientesEnElLocalStorage()
-
-    // mostrar los resultados del prestamo en el contenedor
-    const prestamoContenido = document.getElementById('prestamo-contenido')
-    prestamoContenido.innerHTML = `
-        <p><strong>Monto:</strong> $${monto}</p>
-        <p><strong>Cuotas:</strong> ${cuotas}</p>
-        <p><strong>Interés:</strong> ${interes}%</p>
-        <p><strong>Monto Total a Pagar:</strong> $${montoTotal}</p>
-        <p><strong>Monto por Cuota:</strong> $${montoCuota}</p>
-        `
-    document.getElementById('resultado-prestamo').style.display = 'block'
-} */
