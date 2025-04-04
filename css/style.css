@@ -13,6 +13,9 @@ header{
 main{
     padding: 2rem;
 }
+i{
+    margin-left: 0.5rem;
+}
 .form-container, .result-container{
     max-width: 600px;
     margin: auto;

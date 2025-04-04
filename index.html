@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/style.css">
     <title>Sistemas de Préstamos</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -23,7 +24,7 @@
             <label for="sueldo-cliente">Sueldo:</label>
             <input type="number" id="sueldo-cliente" placeholder="Ingrese su sueldo">
 
-            <button id="btn-agregar-cliente">Agregar Cliente</button>
+            <button id="btn-agregar-cliente">Agregar Cliente<i class="bi bi-person-plus"></i></button>
         </div>
 
         <!-- buscar cliente -->
@@ -31,13 +32,13 @@
             <h2>Buscar Cliente</h2>
             <label for="buscar-dni">DNI del Cliente:</label>
             <input type="number" id="buscar-dni" placeholder="Ingrese el DNI del cliente">
-            <button id="btn-buscar-cliente">Buscar Cliente</button>
+            <button id="btn-buscar-cliente">Buscar<i class="bi bi-search"></i></button>
 
             <!-- resultados -->
             <div class="result-container" id="resultados">
             <h2>Resultados</h2>
             <div id="resultado-contenido"></div>
-            <button id="btn-cerrar-resultados">Cerrar</button>
+            <button id="btn-cerrar-resultados">Cerrar<i class="bi bi-x-circle"></i></button>
             </div>
         </div>
 
@@ -66,12 +67,12 @@
                 <option value="americano">Americano</option>
             </select>
 
-            <button id="btn-solicitar-prestamo">Calcular Préstamo</button>
+            <button id="btn-solicitar-prestamo">Calcular<i class="bi bi-calculator"></i></button>
 
             <div class="result-container" id="resultado-prestamo">
                 <h2>Resumen del Préstamo</h2>
                 <div id="prestamo-contenido"></div>
-                <button id="btn-cerrar-prestamo">Cerrar</button>
+                <button id="btn-cerrar-prestamo">Cerrar<i class="bi bi-x-circle"></i></button>
             </div>
         </div>
 
