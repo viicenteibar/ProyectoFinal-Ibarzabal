@@ -51,10 +51,20 @@
             <input type="number" id="monto" placeholder="Ingrese el monto">
 
             <label for="cuotas">Cantidad de Cuotas:</label>
-            <input type="number" id="cuotas" placeholder="Ingrese la cantidad de cuotas">
+            <select id="cuotas">
+                <option value="1">1 cuota</option>
+                <option value="3">3 cuotas</option>
+                <option value="6">6 cuotas</option>
+                <option value="9">9 cuotas</option>
+                <option value="12">12 cuotas</option>
+            </select>
 
-            <label for="interes">Interés Anual (%):</label>
-            <input type="number" id="interes" placeholder="Ingrese el interés anual">
+            <label for="metodo">Método de Cálculo:</label>
+            <select id="metodo">
+                <option value="frances">Francés</option>
+                <option value="aleman">Alemán</option>
+                <option value="americano">Americano</option>
+            </select>
 
             <button id="btn-solicitar-prestamo">Calcular Préstamo</button>
 

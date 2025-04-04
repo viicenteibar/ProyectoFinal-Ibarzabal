@@ -89,7 +89,156 @@ function buscarClientes(){
     document.getElementById('resultados').style.display = 'block'
 }
 
-// funcion para solicitar un prestamo
+// funcion solitiar prestamo segun metodo
+function calcularPrestamoPorMetodo() {
+    const dni = parseInt(document.getElementById('dni').value);
+    const cliente = listaClientes.find(c => c.dni === dni);
+
+    if (!cliente) {
+        alert("Cliente no encontrado. Por favor, registrese primero.");
+        return;
+    }
+
+    const monto = parseFloat(document.getElementById('monto').value);
+    const cuotas = parseInt(document.getElementById('cuotas').value);
+    const metodo = document.getElementById('metodo').value;
+
+    if (isNaN(monto) || isNaN(cuotas) || monto <= 0 || cuotas <= 0) {
+        alert("Por favor, complete todos los campos con valores válidos.");
+        return;
+    }
+
+    let tablaAmortizacion
+    switch (metodo){
+        case "frances":
+            tablaAmortizacion = calcularMetodoFrances(monto, cuotas)
+            break
+        case "aleman":
+            tablaAmortizacion = calcularMetodoAleman(monto, cuotas)
+            break
+        case "americano":
+            tablaAmortizacion = calcularMetodoAmericano(monto, cuotas)
+            break
+        default:
+            alert("Método de cálculo no válido")
+            return
+    }
+    mostrarTablaAmortizacion(tablaAmortizacion)
+}
+
+// metodo frances
+function calcularMetodoFrances(monto, cuotas){
+    const tasaMensual = 0.05
+    const cuotaMensual = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -cuotas))
+    let saldo = monto
+    const tabla = []
+
+    for (let i = 1; i <= cuotas; i++){
+        const interes = saldo * tasaMensual
+        const capital = cuotaMensual - interes
+        saldo -= capital
+
+        tabla.push({
+            cuota: i,
+            capital: capital.toFixed(2),
+            interes: interes.toFixed(2),
+            saldo: saldo.toFixed(2),
+        })
+    }
+    return tabla
+}
+
+// metodo aleman
+function calcularMetodoAleman(monto, cuotas){
+    const tasaMensual = 0.05
+    const amortizacion = monto / cuotas
+    let saldo = monto
+    const tabla = []
+
+    for (let i = 1; i <= cuotas; i++){
+        const interes = saldo * tasaMensual
+        const cuota = amortizacion + interes
+        saldo -= amortizacion
+
+        tabla.push({
+            cuota: i,
+            capital: amortizacion.toFixed(2),
+            interes: interes.toFixed(2),
+            saldo: saldo.toFixed(2),
+        })
+    }
+    return tabla
+}
+
+// metodo americano
+function calcularMetodoAmericano(monto, cuotas){
+    const tasaMensual = 0.05
+    const interesMensual = monto * tasaMensual
+    const tabla = []
+
+    for (let i = 1; i <= cuotas; i++){
+        const capital = i === cuotas ? monto : 0
+        const cuota = capital + interesMensual
+
+        tabla.push({
+            cuota: i,
+            capital: capital.toFixed(2),
+            interes: interesMensual.toFixed(2),
+            saldo: i === cuotas ? 0 : monto,
+        })
+    }
+    return tabla
+}
+
+// mostrar la tabla de amortizacion
+function mostrarTablaAmortizacion(tabla){
+    const tablaContenido = document.getElementById('prestamo-contenido')
+    tablaContenido.innerHTML = `
+        <h3>Tabla de Amortación</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cuota</th>
+                    <th>Capital</th>
+                    <th>Interés</th>
+                    <th>Saldo</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tabla.map(fila => `
+                    <tr>
+                        <td>${fila.cuota}</td>
+                        <td>${fila.capital}</td>
+                        <td>${fila.interes}</td>
+                        <td>${fila.saldo}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `
+    document.getElementById('resultado-prestamo').style.display = 'block'
+}
+
+
+// manejadores de eventos para los botones
+document.getElementById('btn-agregar-cliente').addEventListener('click', agregarClientes)
+document.getElementById('btn-buscar-cliente').addEventListener('click', buscarClientes)
+document.getElementById('btn-solicitar-prestamo').addEventListener('click', calcularPrestamoPorMetodo)
+
+// botones para cerrar
+document.getElementById('btn-cerrar-resultados').addEventListener('click', function(){
+    document.getElementById('resultados').style.display = 'none'
+})
+document.getElementById('btn-cerrar-prestamo').addEventListener('click', function(){
+    document.getElementById('resultado-prestamo').style.display = 'none'
+})
+
+
+
+
+
+
+/* // funcion para solicitar un prestamo
 function solicitarPrestamo(){
     const dni = parseInt(document.getElementById('dni').value)
     const cliente = listaClientes.find(c => c.dni === dni)
@@ -134,17 +283,4 @@ function solicitarPrestamo(){
         <p><strong>Monto por Cuota:</strong> $${montoCuota}</p>
         `
     document.getElementById('resultado-prestamo').style.display = 'block'
-}
-
-// manejadores de eventos para los botones
-document.getElementById('btn-agregar-cliente').addEventListener('click', agregarClientes)
-document.getElementById('btn-buscar-cliente').addEventListener('click', buscarClientes)
-document.getElementById('btn-solicitar-prestamo').addEventListener('click', solicitarPrestamo)
-
-// botones para cerrar
-document.getElementById('btn-cerrar-resultados').addEventListener('click', function(){
-    document.getElementById('resultados').style.display = 'none'
-})
-document.getElementById('btn-cerrar-prestamo').addEventListener('click', function(){
-    document.getElementById('resultado-prestamo').style.display = 'none'
-})
+} */
