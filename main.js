@@ -169,9 +169,24 @@ function calcularPrestamoPorMetodo() {
             tablaAmortizacion = calcularMetodoAmericano(monto, cuotas)
             break
         default:
-            alert("Método de cálculo no válido")
+            Swal.fire({
+                title: 'Error',
+                text: 'Método de amortización no válido.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+            })
             return
     }
+
+    const interes = 0.05
+    const montoTotal = tablaAmortizacion.reduce((acc, fila)=> acc + parseFloat(fila.capital) + parseFloat(fila.interes), 0)
+    const montoCuota = montoTotal / cuotas
+
+    const prestamo = new Prestamo(monto, cuotas, interes, montoTotal.toFixed(2), montoCuota.toFixed(2))
+    cliente.prestamos.push(prestamo)
+
+    guardarClientesEnElLocalStorage()
+
     mostrarTablaAmortizacion(tablaAmortizacion)
 }
 
