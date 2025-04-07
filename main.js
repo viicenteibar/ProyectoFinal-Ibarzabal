@@ -81,43 +81,84 @@ function agregarClientes(){
 }
 
 // funcion para buscar clientes por dni
-function buscarClientes(){
-    const dni = parseInt(document.getElementById('buscar-dni').value)
+function buscarClientes() {
+    const dni = parseInt(document.getElementById('buscar-dni').value);
 
-    if(isNaN(dni)){
+    if (isNaN(dni)) {
         Swal.fire({
             title: 'Error',
             text: 'Por favor, ingrese un DNI válido.',
             icon: 'error',
             confirmButtonText: 'Aceptar',
-        })
-        return
+        });
+        return;
     }
 
-    const clienteBuscado = listaClientes.find(c=> c.dni === dni)
-    const resultadoDiv = document.getElementById('resultado-contenido')
+    const clienteBuscado = listaClientes.find(c => c.dni === dni);
+    const resultadoDiv = document.getElementById('resultado-contenido');
 
     if (clienteBuscado) {
+        // Calcular la sumatoria de las cuotas por mes
+        const maxMeses = Math.max(...clienteBuscado.prestamos.map(p => p.cuotas)); // Determina el máximo número de meses
+        const cuotasPorMes = Array(maxMeses).fill(0); // Inicializa un array con ceros para cada mes
+
+        clienteBuscado.prestamos.forEach(prestamo => {
+            const cuotaMensual = (prestamo.montoTotal / prestamo.cuotas).toFixed(2);
+            for (let mes = 0; mes < prestamo.cuotas; mes++) {
+                cuotasPorMes[mes] += parseFloat(cuotaMensual); // Suma la cuota mensual al mes correspondiente
+            }
+        });
+
+        // Generar la tabla con los totales por mes
+        let tablaHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Total a Pagar</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        cuotasPorMes.forEach((total, index) => {
+            tablaHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>$${total.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+
+        tablaHTML += `
+                </tbody>
+            </table>
+        `;
+
         resultadoDiv.innerHTML = `
-        <p><strong>Nombre:</strong> ${clienteBuscado.nombre}</p>
-        <p><strong>DNI:</strong> ${clienteBuscado.dni}</p>
-        <p><strong>Sueldo:</strong> $${clienteBuscado.sueldo}</p>
-        <p><strong>Préstamos:</strong> ${clienteBuscado.prestamos.length}</p>
-        `
+            <p><strong>Nombre:</strong> ${clienteBuscado.nombre}</p>
+            <p><strong>DNI:</strong> ${clienteBuscado.dni}</p>
+            <p><strong>Sueldo:</strong> $${clienteBuscado.sueldo}</p>
+            <p><strong>Préstamos:</strong> ${clienteBuscado.prestamos.length}</p>
+            ${tablaHTML}
+        `;
+
         Swal.fire({
             title: 'Cliente Encontrado',
-            text: 'Los datos se han cargado correctamente.',
+            text: 'Los datos del cliente se han cargado correctamente.',
             icon: 'success',
             confirmButtonText: 'Aceptar',
-        })
-        document.getElementById('resultados').style.display = 'block'
+        });
+
+        document.getElementById('resultados').style.display = 'block';
     } else {
+        resultadoDiv.innerHTML = `<p>No se encontró un cliente con ese DNI.</p>`;
         Swal.fire({
             title: 'No Encontrado',
             text: 'No se encontró un cliente con ese DNI.',
             icon: 'warning',
             confirmButtonText: 'Aceptar',
-        })
+        });
     }
 }
 
