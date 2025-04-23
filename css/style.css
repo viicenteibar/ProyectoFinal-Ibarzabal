@@ -200,10 +200,28 @@ h2 {
     border-radius: 4px;
 }
 
+.swal2-select {
+    color: black !important;
+    background-color: white !important;
+    border: 1px solid #ccc !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+}
+
 .swal2-confirm:hover {
     background-color: #006d3b !important;
 }
 
 .swal2-cancel:hover {
     background-color: #004b29 !important;
+}
+
+#grafico-cliente-contenedor {
+    text-align: center;
+}
+
+#grafico-cliente {
+    display: inline-block;
+    margin: 0 auto;
 }

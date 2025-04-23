@@ -1,0 +1,13 @@
+{
+    "metodos": {
+        "frances": {
+            "tasa": 0.30
+        },
+        "aleman": {
+            "tasa": 0.25
+        },
+        "americano": {
+            "tasa": 0.35
+        }
+    }
+}

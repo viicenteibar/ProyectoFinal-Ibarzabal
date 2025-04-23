@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -63,16 +64,19 @@
 
             <!-- resultados -->
             <div class="result-container" id="resultados">
-            <h2>Resultados</h2>
-            <div id="resultado-contenido"></div>
-            <button id="btn-cerrar-resultados">Cerrar<i class="bi bi-x-circle"></i></button>
+                <h2>Resultados</h2>
+                <!-- Contenedor para la tabla de resultados -->
+                <div id="resultado-contenido"></div>
+                <!-- Contenedor para el gráfico del cliente -->
+                <div id="grafico-cliente-contenedor" style="display: none;"></div>
+                <button id="btn-cerrar-resultados">Cerrar<i class="bi bi-x-circle"></i></button>
             </div>
         </div>
 
         <!-- solicitar préstamo -->
         <div class="form-container" id="form-solicitar-prestamo">
             <h2>Solicitar Préstamo</h2>
-            <label for="nombre">DNI:</label>
+            <label for="dni">DNI:</label>
             <input type="number" id="dni" placeholder="Ingrese su DNI">
 
             <label for="monto">Monto del Préstamo:</label>
@@ -98,7 +102,10 @@
 
             <div class="result-container" id="resultado-prestamo">
                 <h2>Resumen del Préstamo</h2>
-                <div id="prestamo-contenido"></div>
+                <!-- Contenedor para la tabla de amortización -->
+                <div id="tabla-prestamo"></div>
+                <!-- Contenedor para el gráfico del préstamo -->
+                <div id="grafico-prestamo-contenedor" style="display: none;"></div>
                 <button id="btn-cerrar-prestamo">Cerrar<i class="bi bi-x-circle"></i></button>
             </div>
         </div>

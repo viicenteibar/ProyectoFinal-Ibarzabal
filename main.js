@@ -15,7 +15,7 @@ setTimeout(saludar, 500);
 
 // funcion para guardar clientes en el localstorage
 function guardarClientesEnElLocalStorage() {
-    localStorage.setItem('listaClientes', JSON.stringify(listaClientes))
+    localStorage.setItem('listaClientes', JSON.stringify(listaClientes));
 }
 
 // funcion para cargar clientes desde el localstorage
@@ -31,22 +31,22 @@ function cargarClientesDesdeLocalStorage() {
     }
 }
 
-// contructor para cliente
-const Cliente = function(nombre, dni, sueldo) {
-    this.nombre = nombre
-    this.dni = dni
-    this.sueldo = sueldo
-    this.prestamos = []
-}
+// constructor para cliente
+const Cliente = function (nombre, dni, sueldo) {
+    this.nombre = nombre;
+    this.dni = dni;
+    this.sueldo = sueldo;
+    this.prestamos = [];
+};
 
-// contructor para prestamo
-const Prestamo = function(monto, cuotas, interes, montoTotal, montoCuota) {
-    this.monto = monto
-    this.cuotas = cuotas
+// constructor para prestamo
+const Prestamo = function (monto, cuotas, interes, montoTotal, montoCuota) {
+    this.monto = monto;
+    this.cuotas = cuotas;
     this.interes = interes;
     this.montoTotal = montoTotal;
     this.montoCuota = montoCuota;
-}
+};
 
 // arrays para almacenar los datos
 const listaClientes = [];
@@ -205,6 +205,9 @@ function buscarClientes() {
             ${tablaCuotasHTML}
         `;
 
+        const totalPrestamos = clienteBuscado.prestamos.reduce((acc, prestamo) => acc + parseFloat(prestamo.montoCuota) * prestamo.cuotas, 0);
+        mostrarGraficoCliente(clienteBuscado.sueldo, totalPrestamos);
+
         Swal.fire({
             title: 'Cliente Encontrado',
             text: 'Los datos del cliente se han cargado correctamente.',
@@ -225,8 +228,8 @@ function buscarClientes() {
     document.getElementById('buscar-dni').value = '';
 }
 
-// funcion solitiar prestamo segun metodo
-function calcularPrestamoPorMetodo() {
+// funcion para solicitar prestamo segun metodo
+async function calcularPrestamoPorMetodo() {
     const dni = parseInt(document.getElementById('dni').value);
     const cliente = listaClientes.find(c => c.dni === dni);
 
@@ -254,119 +257,178 @@ function calcularPrestamoPorMetodo() {
         return;
     }
 
-    let tablaAmortizacion;
-    switch (metodo) {
-        case "frances":
-            tablaAmortizacion = calcularMetodoFrances(monto, cuotas);
-            break;
-        case "aleman":
-            tablaAmortizacion = calcularMetodoAleman(monto, cuotas);
-            break;
-        case "americano":
-            tablaAmortizacion = calcularMetodoAmericano(monto, cuotas);
-            break;
-        default:
+    try {
+        // buscamos las tasas desde el archivo JSON
+        const respuesta = await fetch('./tasas.json');
+        if (!respuesta.ok) {
+            throw new Error(`Error al cargar tasas.json: ${respuesta.status} ${respuesta.statusText}`);
+        }
+
+        const datos = await respuesta.json();
+        const tasa = datos.metodos[metodo]?.tasa;
+
+        if (!tasa) {
+            throw new Error(`No se encontró la tasa para el método: ${metodo}`);
+        }
+
+        let tablaAmortizacion;
+        switch (metodo) {
+            case "frances":
+                tablaAmortizacion = calcularMetodoFrances(monto, cuotas, tasa);
+                break;
+            case "aleman":
+                tablaAmortizacion = calcularMetodoAleman(monto, cuotas, tasa);
+                break;
+            case "americano":
+                tablaAmortizacion = calcularMetodoAmericano(monto, cuotas, tasa);
+                break;
+            default:
+                throw new Error('Método de amortización no válido.');
+        }
+
+        // calculo de la cuota mensual
+        const montoTotal = tablaAmortizacion.reduce((acc, fila) => acc + parseFloat(fila.capital) + parseFloat(fila.interes), 0);
+        const montoCuota = montoTotal / cuotas;
+
+        // validar que la cuota mensual no supere el sueldo del cliente
+        if (montoCuota > cliente.sueldo) {
             Swal.fire({
                 title: 'Error',
-                text: 'Método de amortización no válido.',
+                text: `La cuota mensual (${montoCuota.toFixed(2)}) supera el sueldo del cliente (${cliente.sueldo.toFixed(2)}).`,
                 icon: 'error',
                 confirmButtonText: 'Aceptar',
             });
             return;
+        }
+
+        const prestamo = new Prestamo(monto, cuotas, tasa, montoTotal.toFixed(2), montoCuota.toFixed(2));
+        cliente.prestamos.push(prestamo);
+
+        guardarClientesEnElLocalStorage();
+
+        try {
+            // mostrar la tabla de amortización
+            try {
+                mostrarTablaAmortizacion(tablaAmortizacion);
+            } catch (error) {
+                console.error('Error al mostrar la tabla de amortización:', error);
+                throw new Error('Error al generar la tabla de amortización.');
+            }
+
+            // gráfico del préstamo
+            try {
+                mostrarGraficoPrestamo(monto, cuotas, tasa, montoTotal);
+            } catch (error) {
+                console.error('Error al mostrar el gráfico del préstamo:', error);
+                throw new Error('Error al generar el gráfico del préstamo.');
+            }
+
+            // limpiar los campos del formulario
+            document.getElementById('dni').value = '';
+            document.getElementById('monto').value = '';
+
+            // mensaje de éxito
+            Swal.fire({
+                title: 'Éxito',
+                text: 'Préstamo solicitado exitosamente.',
+                icon: 'success',
+                confirmButtonText: 'Aceptar',
+            });
+        } catch (error) {
+            console.error('Error al procesar el préstamo:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudo procesar el préstamo. Intente nuevamente más tarde.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+            });
+        }
+    } catch (error) {
+        console.error('Error al procesar el préstamo:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'No se pudo procesar el préstamo. Intente nuevamente más tarde.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+        });
     }
-
-    const interes = 0.05;
-    const montoTotal = tablaAmortizacion.reduce((acc, fila) => acc + parseFloat(fila.capital) + parseFloat(fila.interes), 0);
-    const montoCuota = montoTotal / cuotas;
-
-    const prestamo = new Prestamo(monto, cuotas, interes, montoTotal.toFixed(2), montoCuota.toFixed(2));
-    cliente.prestamos.push(prestamo);
-
-    guardarClientesEnElLocalStorage();
-
-    Swal.fire({
-        title: 'Éxito',
-        text: 'Préstamo solicitado exitosamente.',
-        icon: 'success',
-        confirmButtonText: 'Aceptar',
-    });
-
-    mostrarTablaAmortizacion(tablaAmortizacion);
-
-    document.getElementById('dni').value = '';
-    document.getElementById('monto').value = '';
 }
 
 // metodo frances
-function calcularMetodoFrances(monto, cuotas){
-    const tasaMensual = 0.05
-    const cuotaMensual = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -cuotas))
-    let saldo = monto
-    const tabla = []
+function calcularMetodoFrances(monto, cuotas, tasa) {
+    const cuotaMensual = (monto * tasa) / (1 - Math.pow(1 + tasa, -cuotas));
+    let saldo = monto;
+    const tabla = [];
 
-    for (let i = 1; i <= cuotas; i++){
-        const interes = saldo * tasaMensual
-        const capital = cuotaMensual - interes
-        saldo -= capital
+    for (let i = 1; i <= cuotas; i++) {
+        const interes = saldo * tasa;
+        const capital = cuotaMensual - interes;
+        saldo -= capital;
 
         tabla.push({
             cuota: i,
             capital: capital.toFixed(2),
             interes: interes.toFixed(2),
             saldo: saldo.toFixed(2),
-        })
+        });
     }
-    return tabla
+    return tabla;
 }
 
 // metodo aleman
-function calcularMetodoAleman(monto, cuotas){
-    const tasaMensual = 0.05
-    const amortizacion = monto / cuotas
-    let saldo = monto
-    const tabla = []
+function calcularMetodoAleman(monto, cuotas, tasa) {
+    const amortizacion = monto / cuotas;
+    let saldo = monto;
+    const tabla = [];
 
-    for (let i = 1; i <= cuotas; i++){
-        const interes = saldo * tasaMensual
-        const cuota = amortizacion + interes
-        saldo -= amortizacion
+    for (let i = 1; i <= cuotas; i++) {
+        const interes = saldo * tasa;
+        const cuota = amortizacion + interes;
+        saldo -= amortizacion;
 
         tabla.push({
             cuota: i,
             capital: amortizacion.toFixed(2),
             interes: interes.toFixed(2),
             saldo: saldo.toFixed(2),
-        })
+        });
     }
-    return tabla
+    return tabla;
 }
 
 // metodo americano
-function calcularMetodoAmericano(monto, cuotas){
-    const tasaMensual = 0.05
-    const interesMensual = monto * tasaMensual
-    const tabla = []
+function calcularMetodoAmericano(monto, cuotas, tasa) {
+    const interesMensual = monto * tasa;
+    const tabla = [];
 
-    for (let i = 1; i <= cuotas; i++){
-        const capital = i === cuotas ? monto : 0
-        const cuota = capital + interesMensual
+    for (let i = 1; i <= cuotas; i++) {
+        const capital = i === cuotas ? monto : 0;
+        const cuota = capital + interesMensual;
 
         tabla.push({
             cuota: i,
             capital: capital.toFixed(2),
             interes: interesMensual.toFixed(2),
             saldo: i === cuotas ? 0 : monto,
-        })
+        });
     }
-    return tabla
+    return tabla;
 }
 
 // mostrar la tabla de amortizacion
-function mostrarTablaAmortizacion(tabla){
-    const tablaContenido = document.getElementById('prestamo-contenido')
+function mostrarTablaAmortizacion(tabla) {
+    const tablaContenido = document.getElementById('tabla-prestamo');
+    if (!tablaContenido) {
+        throw new Error('El contenedor de la tabla de amortización no existe.');
+    }
+
+    if (!Array.isArray(tabla)) {
+        throw new Error('Los datos de la tabla de amortización no son válidos.');
+    }
+
     tablaContenido.innerHTML = `
         <h3>Tabla de Amortización</h3>
-        <table>
+        <table style="margin-bottom: 20px;"> <!-- Agregado margen inferior -->
             <thead>
                 <tr>
                     <th>Cuota</th>
@@ -386,8 +448,105 @@ function mostrarTablaAmortizacion(tabla){
                 `).join('')}
             </tbody>
         </table>
-    `
-    document.getElementById('resultado-prestamo').style.display = 'block'
+    `;
+    document.getElementById('resultado-prestamo').style.display = 'block';
+}
+
+// funcion para mostrar grafico cuando pido el prestamo
+function mostrarGraficoPrestamo(monto, cuotas, interes, montoTotal) {
+    const contenedorGrafico = document.getElementById('grafico-prestamo-contenedor');
+    if (!contenedorGrafico) {
+        throw new Error('El contenedor del gráfico del préstamo no existe.');
+    }
+
+    // eliminar el gráfico anterior si existe
+    contenedorGrafico.innerHTML = '';
+
+    // crear el elemento <canvas>
+    const canvas = document.createElement('canvas');
+    canvas.id = 'grafico-prestamo';
+    canvas.width = 300;
+    canvas.height = 100;
+    contenedorGrafico.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+
+    // gráfico con colores intercalados
+    window.graficoPrestamo = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Préstamo', 'Intereses', 'Monto Total', 'Cuota Mensual'],
+            datasets: [{
+                label: 'Valores en ARS',
+                data: [monto, montoTotal - monto, montoTotal, montoTotal / cuotas],
+                backgroundColor: ['#2dcd84', '#006d3b', '#2dcd84', '#006d3b'],
+                borderColor: ['#2dcd84', '#006d3b', '#2dcd84', '#006d3b'],
+                borderWidth: 1,
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false,
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                },
+            },
+        },
+    });
+
+    // mostrar el contenedor del gráfico
+    contenedorGrafico.style.display = 'block';
+}
+
+// funcion para mostrar grafico cuando busco un cliente
+function mostrarGraficoCliente(sueldo, totalPrestamos) {
+    const contenedorGrafico = document.getElementById('grafico-cliente-contenedor');
+    if (!contenedorGrafico) {
+        throw new Error('El contenedor del gráfico del cliente no existe.');
+    }
+
+    // eliminamos el gráfico anterior si existe
+    contenedorGrafico.innerHTML = '';
+
+    // crear el elemento <canvas>
+    const canvas = document.createElement('canvas');
+    canvas.id = 'grafico-cliente';
+    canvas.width = 250;
+    canvas.height = 250;
+    contenedorGrafico.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+
+    // crear el gráfico
+    window.graficoCliente = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Sueldo Disponible', 'Destinado a Préstamos'],
+            datasets: [{
+                label: 'Distribución del Sueldo',
+                data: [sueldo - totalPrestamos, totalPrestamos],
+                backgroundColor: ['#2dcd84', '#006d3b'],
+                borderColor: ['#2dcd84', '#006d3b'],
+                borderWidth: 1,
+            }],
+        },
+        options: {
+            responsive: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+            },
+        },
+    });
+
+    // mostramos el contenedor del gráfico
+    contenedorGrafico.style.display = 'block';
 }
 
 // funcion para eliminar cliente
@@ -434,6 +593,7 @@ function eliminarCliente() {
                 icon: 'success',
                 confirmButtonText: 'Aceptar',
             });
+            document.getElementById('dni-eliminar').value = '';
         }
     });
 }
@@ -509,6 +669,7 @@ function modificarCliente() {
                         confirmButtonText: 'Aceptar',
                     });
             }
+            document.getElementById('dni-modificar').value = '';
         }
     });
 }
@@ -705,7 +866,7 @@ document.getElementById('btn-confirmar-eliminar').addEventListener('click', elim
 document.getElementById('btn-buscar-cliente').addEventListener('click', buscarClientes);
 document.getElementById('btn-solicitar-prestamo').addEventListener('click', calcularPrestamoPorMetodo);
 document.getElementById('btn-cotizacion').addEventListener('click', async () => {
-    const cotizacion = await obtenerCotizacion('USD', 'ARS'); // Obtener cotización USD → ARS
+    const cotizacion = await obtenerCotizacion('USD', 'ARS');
     if (cotizacion) {
         Swal.fire({
             title: 'Cotización Actual',
