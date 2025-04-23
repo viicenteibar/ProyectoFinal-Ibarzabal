@@ -1,3 +1,18 @@
+// funcion para saludar
+function saludar() {
+    Swal.fire({
+        title: '¡Bienvenido al sistema de préstamos!',
+        imageUrl: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExdHduNGRkeDdnbHJsbzZ1eWFwcmh2Y3Rodmd5Y28xN2E0b3RvbWJ2NyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/WtOkaikiwaR87ZvAFH/giphy.gif',
+        imageWidth: 400,
+        imageHeight: 300,
+        imageAlt: 'Imagen de bienvenida',
+        confirmButtonText: 'Aceptar',
+        timer: 5000,
+        timerProgressBar: true,
+    });
+}
+setTimeout(saludar, 500);
+
 // funcion para guardar clientes en el localstorage
 function guardarClientesEnElLocalStorage() {
     localStorage.setItem('listaClientes', JSON.stringify(listaClientes))
@@ -10,7 +25,7 @@ function cargarClientesDesdeLocalStorage() {
         const clientesParseados = JSON.parse(clientesGuardados);
         clientesParseados.forEach(clienteData => {
             const cliente = new Cliente(clienteData.nombre, clienteData.dni, clienteData.sueldo);
-            cliente.prestamos = clienteData.prestamos || []; // asegúrate de inicializar los préstamos
+            cliente.prestamos = clienteData.prestamos || [];
             listaClientes.push(cliente);
         });
     }
@@ -632,6 +647,30 @@ function modificarTodo(cliente) {
         }
     });
 }
+async function obtenerCotizacion(monedaBase, monedaObjetivo) {
+    const apiKey = '929ffb3ba3b321bdb0e4c475';
+    const url = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${monedaBase}`;
+
+    try {
+        const respuesta = await fetch(url);
+        const datos = await respuesta.json();
+
+        if (datos.result === 'success') {
+            return datos.conversion_rates[monedaObjetivo];
+        } else {
+            throw new Error('No se pudo obtener la cotización.');
+        }
+    } catch (error) {
+        console.error('Error al obtener la cotización:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'No se pudo obtener la cotización de la moneda. Intente nuevamente más tarde.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+        });
+        return null;
+    }
+}
 
 // mostrar el formulario correspondiente
 function mostrarFormulario(formularioId) {
@@ -665,6 +704,17 @@ document.getElementById('btn-confirmar-eliminar').addEventListener('click', elim
 // manejadores de eventos para los botones
 document.getElementById('btn-buscar-cliente').addEventListener('click', buscarClientes);
 document.getElementById('btn-solicitar-prestamo').addEventListener('click', calcularPrestamoPorMetodo);
+document.getElementById('btn-cotizacion').addEventListener('click', async () => {
+    const cotizacion = await obtenerCotizacion('USD', 'ARS'); // Obtener cotización USD → ARS
+    if (cotizacion) {
+        Swal.fire({
+            title: 'Cotización Actual',
+            text: `1 USD equivale a ${cotizacion.toFixed(2)} ARS.`,
+            icon: 'info',
+            confirmButtonText: 'Aceptar',
+        });
+    }
+});
 
 // botones para cerrar
 document.getElementById('btn-cerrar-resultados').addEventListener('click', function(){
